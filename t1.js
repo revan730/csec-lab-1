@@ -12,12 +12,25 @@ for (let i = 0; i < ciphered.length; i++) {
   charMap.push(ciphered.charCodeAt(i));
 }
 
-const solvesArr = [];
+let solvesArr = [];
 
+
+// just trying shit
 for (let i = 1; i < 27; i++) {
   solvesArr.push(charMap.map(el => String.fromCharCode(el ^ (i))));
 }
 
+
+// filtering obvious out
+solvesArr = solvesArr.filter(el => el.reduce((prev, cur) => prev && cur.charCodeAt(0) >= 32 && cur.charCodeAt(0) <= 127, true))
+
+
+// compressing char ars back to string
 solvesArr.forEach((el, i, arr) => arr[i] = el.join(''));
 
+const commonWords = ['the', 'and', 'or', 'is'];
+// filtering out common words
+solvesArr = solvesArr.filter(el => commonWords.reduce((prev, w) => prev && el.includes(w), true))
+
 console.log(solvesArr)
+
