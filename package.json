@@ -1,0 +1,28 @@
+{
+  "name": "csec-lab-1",
+  "version": "1.0.0",
+  "description": "Cubersecurity lab 1",
+  "main": "t1.js",
+  "dependencies": {
+    "hex-to-binary": "^1.0.1",
+    "text-ciphers": "^0.5.2"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/revan730/csec-lab-1.git"
+  },
+  "keywords": [
+    "csec",
+    "cybetsecurity"
+  ],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/revan730/csec-lab-1/issues"
+  },
+  "homepage": "https://github.com/revan730/csec-lab-1#readme"
+}

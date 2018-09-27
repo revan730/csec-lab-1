@@ -1,5 +1,7 @@
 'use strict';
 
+const genetic = require('./genetic');
+
 const cipherText = 'EFFPQLEKVTVPCPYFLMVHQLUEWCNVWFYGHYTCETHQEKLPVMSAKSPVPAPVYWMVHQLUSPQLYWLASLFVWPQLMVHQLUPLRPSQLULQESPBLWPCSVRVWFLHLWFLWPUEWFYOTCMQYSLWOYWYETHQEKLPVMSAKSPVPAPVYWHEPPLUWSGYULEMQTLPPLUGUYOLWDTVSQETHQEKLPVPVSMTLEUPQEPCYAMEWWYOYULULTCYWPQLSEOLSVOHTLUYAPVWLYGDALSSVWDPQLNLCKCLRQEASPVILSLEUMQBQVMQCYAHUYKEKTCASLFPYFLMVHQLUHULIVYASHEUEDUEHQBVTTPQLVWFLRYGMYVWMVFLWMLSPVTTBYUNESESADDLSPVYWCYAMEWPUCPYFVIVFLPQLOLSSEDLVWHEUPSKCPQLWAOKLUYGMQEUEMPLUSVWENLCEWFEHHTCGULXALWMCEWETCSVSPYLEMQYGPQLOMEWCYAGVWFEBECPYASLQVDQLUYUFLUGULXALWMCSPEPVSPVMSBVPQPQVSPCHLYGMVHQLUPQLWLRPHEUEDUEHQMYWPEVWSSYOLHULPPCVWPLULSPVWDVWGYUOEPVYWEKYAPSYOLEFFVPVYWETULBEUF';
 
 //const cipherText = 'KHOORZRUOG';
@@ -36,7 +38,7 @@ const engFregs = {
 
 // Compute frequency of each letter in text
 
-const cipherFreqs = {};
+/*const cipherFreqs = {};
 
 for (let i = 0;i < cipherText.length;i++) {
     if (cipherFreqs[cipherText[i]] === undefined) {
@@ -46,7 +48,6 @@ for (let i = 0;i < cipherText.length;i++) {
     }
 }
 
-//console.log(cipherFreqs);
 
 for (let f in cipherFreqs) {
     cipherFreqs[f] = cipherFreqs[f] / cipherText.length;
@@ -81,3 +82,20 @@ for (let i = 0;i < 26;i++) {
 }
 
 console.log(correlations);*/
+
+//'ekmflgdqvzntowyhxuspaibrcj'
+// 'abcdefghijklmnopqrstuvwxyz'
+
+const chromosome = new genetic.Chromosome('ekmflgdqvzntowyhxuspaibrcj',
+ cipherText, engFregs );
+
+console.log(`Chromosome fitness is ${chromosome.fitness}`);
+
+const cracker = new genetic.GeneticCracker(cipherText, engFregs);
+cracker.createInitialPopulation();
+cracker.population.map((el) => console.log(`${el.genome} fit: ${el.fitness}`));
+
+console.log('Creating children');
+
+const children = cracker.createChildren(cracker.population[0], cracker.population[4]);
+children.map((el) => console.log(`${el.genome} fit: ${el.fitness}`));
