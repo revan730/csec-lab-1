@@ -4,18 +4,16 @@ const MonoAlphabeticCipher = require('text-ciphers').MonoAlphabeticCipher;
 
 // Genetic algorithm implementation for substitution cipher decryption
 
-const LOG_BASE = 2;
-
 const calculateFitness = (genome, cipherText, engFreqs) => {
     let fitness = 0.0;
     const mCipher = new MonoAlphabeticCipher({
         substitution: genome
     });
 
-    console.log(`genome is ${genome}`);
+    //console.log(`genome is ${genome}`);
     const decryptedText = mCipher.decipher(cipherText.toLowerCase()).toUpperCase();
-    console.log("decryptedText");
-    console.log(decryptedText);
+    //console.log("decryptedText");
+    //console.log(decryptedText);
 
     
 
@@ -32,10 +30,11 @@ const calculateFitness = (genome, cipherText, engFreqs) => {
     for (let f in decryptedFreqs) {
         decryptedFreqs[f] = decryptedFreqs[f] / decryptedText.length;
     }
-    console.log(decryptedFreqs);
+    //console.log(decryptedFreqs);
     for (let c in decryptedFreqs) {
         //console.log(`char ${c} dec ${decryptedFreqs[c]} eng ${engFreqs[c]} log ${Math.log2(engFreqs[c])}`);
         fitness += Math.abs(decryptedFreqs[c] - engFreqs[c]);
+        //fitness += decryptedFreqs[c] * Math.log2(engFreqs[c])
     }
 
     return fitness;
@@ -62,11 +61,11 @@ class Chromosome {
 class GeneticCracker {
     constructor(cipherText, engFreqs) {
         this.generations = 1000;
-        this.populationSize = 10;
+        this.populationSize = 500;
         this.elitismPercentage = 15;
         this.tournamentSize = 20;
         this.tournamentWinnerProbability = 0.75;
-        this.crossoverProbability = 0.65;
+        this.crossoverProbability = 0.7;
         this.mutationProbability = 0.2;
         this.crossoverPoints = 5;
         this.currentGeneration = 0;
@@ -101,7 +100,7 @@ class GeneticCracker {
             for (let i = 0;i < this.crossoverPoints;i++) {
                 let index = -1;
                 do {
-                    index = getRandomInt(0, firstChromo.genome.length);
+                    index = getRandomInt(0, firstChromo.genome.length - 1);
                 } while (randomPositions.includes(index));
                 randomPositions.push(index);
             }
@@ -143,11 +142,11 @@ class GeneticCracker {
         // First child mutation
         if (firstMutationProbability < this.mutationProbability)
         {
-            const oldPosition = getRandomInt(0, firstChromo.genome.length);
+            const oldPosition = getRandomInt(0, firstChromo.genome.length - 1);
             let newPosition = -1;
             do
             {
-                newPosition = getRandomInt(0, firstChromo.genome.length);
+                newPosition = getRandomInt(0, firstChromo.genome.length - 1);
             } while (oldPosition == newPosition);
             const oldChar = firstChild[oldPosition];
             firstChild = setCharAt(firstChild, oldPosition,
@@ -158,11 +157,11 @@ class GeneticCracker {
         // Second child mutation
         if (secondMutationProbability < this.mutationProbability)
         {
-            const oldPosition = getRandomInt(0, secondChromo.genome.length);
+            const oldPosition = getRandomInt(0, secondChromo.genome.length - 1);
             let newPosition = -1;
             do
             {
-                newPosition = getRandomInt(0, secondChromo.genome.length);
+                newPosition = getRandomInt(0, secondChromo.genome.length - 1);
             } while (oldPosition == newPosition);
             const oldChar = secondChild[oldPosition];
             secondChild = setCharAt(secondChild, oldPosition,
@@ -175,6 +174,76 @@ class GeneticCracker {
         children[1] = new Chromosome(secondChild, this.cipherText, this.engFreqs);
 
         return children;
+    }
+
+    newGeneration() {
+        const newPopulation = [];
+        const elitismAmount = Math.ceil(this.populationSize * (this.elitismPercentage / 100));
+        const childrenNumber = this.populationSize - elitismAmount;
+
+        if (elitismAmount > 0) {
+            newPopulation.concat(this.population.slice(0, elitismAmount));
+        }
+        if (childrenNumber > 0) {
+            let firstTournamentMembers = [];
+            let secondTournamentMembers = [];
+            const probabilities = [];
+            probabilities.push(this.tournamentWinnerProbability);
+            let runningProbability = probabilities[0];
+            for (let i = 1;i < this.tournamentSize;i++) {
+                runningProbability *= (1 - this.tournamentWinnerProbability);
+                probabilities.push(probabilities[i - 1] + runningProbability);
+            }
+
+            for (let i = 0; i < Math.ceil(childrenNumber / 2); i++) {
+                firstTournamentMembers = [];
+                secondTournamentMembers = [];
+
+                for (let j = 0; j < this.tournamentSize; j++) {
+                    let individual = null;
+                    do {
+                            individual = this.population[getRandomInt(0, this.populationSize - 1)];
+                       } while (firstTournamentMembers.includes(individual));
+                    firstTournamentMembers.push(individual);
+                    do {
+                        individual = this.population[getRandomInt(0, this.populationSize - 1)];
+                   } while (secondTournamentMembers.includes(individual) || firstTournamentMembers.includes(individual));
+                   secondTournamentMembers.push(individual);
+                }
+
+                // Sort members by fitness
+                firstTournamentMembers.sort((a, b) => a.fitness > b.fitness);
+                secondTournamentMembers.sort((a, b) => a.fitness > b.fitness);
+
+                const firstProbability = Math.random();
+                const secondProbability = Math.random();
+                let firstWinner = null;
+                let secondWinner = null;
+                for (let j = 0; j < this.tournamentSize; j++) {
+                    if (firstProbability <= probabilities[j] || j === this.tournamentSize - 1)
+                    {
+                        firstWinner = firstTournamentMembers[j];
+                        break;
+                    }
+                }
+                for (let j = 0; j < this.tournamentSize; j++) {
+                    if (secondProbability <= probabilities[j] || j === this.tournamentSize - 1)
+                    {
+                        secondWinner = secondTournamentMembers[j];
+                        break;
+                    }
+                }
+                
+                const children = this.createChildren(firstWinner, secondWinner);
+                newPopulation.push(children[0]);
+                if (newPopulation.length < this.populationSize) {
+                    newPopulation.push(children[1]);
+                }
+            }
+        }
+        newPopulation.sort((a, b) => a.fitness < b.fitness);
+        this.population = newPopulation;
+        this.currentGeneration += 1;
     }
 }
 
