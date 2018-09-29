@@ -1,9 +1,14 @@
-const bigrams = require('./bigrams.json')
+const bigrams = require('./bigrams.json');
+const trigrams = require('./trigrams.json');
 
-const total = 2819662855499;
+const totalBigrams = 2819662855499;
+const totalTrigrams = 2098121156991;	
 
 Object.keys(bigrams).forEach(bigram => {
-  bigrams[bigram] = bigrams[bigram]['*/*'] / total;
+  bigrams[bigram] = bigrams[bigram]['*/*'] / totalBigrams;
+});
+Object.keys(trigrams).forEach(trigram => {
+  trigrams[trigram] = trigrams[trigram]['*/*'] / totalTrigrams;
 });
 
 const unigrams = {
@@ -35,7 +40,12 @@ const unigrams = {
   'Z': 0.002,
 }
 
+// console.log(Object.keys(trigrams).reduce((prev, cur) => prev += trigrams[cur], 0))
+// console.log(Object.keys(bigrams).reduce((prev, cur) => prev += bigrams[cur], 0))
+
+
 module.exports = {
   bigrams,
-  unigrams
+  unigrams,
+  trigrams
 };

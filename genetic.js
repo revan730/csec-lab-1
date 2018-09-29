@@ -7,6 +7,7 @@ const frequencies = require('./frequencies');
 // Genetic algorithm implementation for substitution cipher decryption
 
 const bigramFinder = nGram(2)
+const trigramFinder = nGram(3)
 
 // Factory returning a function that converts a value string to n-grams.
 function nGram(n) {
@@ -95,6 +96,28 @@ const calculateFitness = (genome, cipherText) => {
       }
     }
 
+    let trigrams = trigramFinder(decryptedText);
+
+    const trigramFreqs = {};
+
+    for (let i = 0; i < trigrams.length; i++) {
+      if (trigramFreqs[trigrams[i]] === undefined) {
+        trigramFreqs[trigrams[i]] = 1.0;
+      } else {
+        trigramFreqs[trigrams[i]] += 1.0;
+      }
+    }
+    
+    for (let f in trigramFreqs) {
+      trigramFreqs[f] = trigramFreqs[f] / (decryptedText.length - 2);
+    }
+    for (let c in trigramFreqs) {
+      if (frequencies.trigrams[c]) {
+        fitness += Math.abs(trigramFreqs[c] - frequencies.trigrams[c]);
+      }
+    }
+
+
     return fitness;
 };
 
@@ -128,6 +151,34 @@ class GeneticCracker {
         this.currentGeneration = 0;
         this.population = [];
         this.cipherText = cipherText;
+    }
+
+    run(gens, popsize) {
+      this.generations = gens;
+      this.populationSize = popsize;
+
+
+      let timer = Date.now();
+
+      this.createInitialPopulation();
+
+
+      while (this.currentGeneration < this.generations) {
+        this.newGeneration();
+        if (this.currentGeneration % 50 === 0) {
+          console.log(`current generation: ${this.currentGeneration}`);
+        }
+      }
+      this.population.sort((a, b) => a.fitness - b.fitness);
+
+      const mCipher = new MonoAlphabeticCipher({
+          substitution: this.population[0].genome
+      });
+      return {
+        key: this.population[0].genome,
+        deciphered: mCipher.decipher(this.cipherText.toLowerCase()).toUpperCase(),
+        took: Date.now() - timer
+      }
     }
 
     createInitialPopulation() {

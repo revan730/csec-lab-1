@@ -66,10 +66,5 @@ const chromosome = new genetic.Chromosome(
 console.log(`Chromosome fitness is ${chromosome.fitness}`);
 
 const cracker = new genetic.GeneticCracker(cipherText);
-cracker.createInitialPopulation();
-//cracker.population.map((el) => console.log(`${el.genome} fit: ${el.fitness}`));
 
-while (cracker.currentGeneration < cracker.generations) {
-    cracker.newGeneration();
-}
-cracker.population.sort((a, b) => a.fitness - b.fitness).map((el) => console.log(`${el.genome} fit: ${el.fitness}`));
+console.log(cracker.run(5000, 1000))
