@@ -2,9 +2,45 @@
 
 const MonoAlphabeticCipher = require('text-ciphers').MonoAlphabeticCipher;
 
+const frequencies = require('./frequencies');
+
 // Genetic algorithm implementation for substitution cipher decryption
 
-const calculateFitness = (genome, cipherText, engFreqs) => {
+const bigramFinder = nGram(2)
+
+// Factory returning a function that converts a value string to n-grams.
+function nGram(n) {
+  if (typeof n !== 'number' || isNaN(n) || n < 1 || n === Infinity) {
+    throw new Error('`' + n + '` is not a valid argument for n-gram');
+  }
+
+  return grams;
+
+  // Create n-grams from a given value.
+  function grams(value) {
+    const nGrams = [];
+    let index;
+
+    if (value === null || value === undefined) {
+      return nGrams;
+    }
+
+    value = value.slice ? value : String(value);
+    index = value.length - n + 1;
+
+    if (index < 1) {
+      return nGrams;
+    }
+
+    while (index--) {
+      nGrams[index] = value.slice(index, index + n);
+    }
+
+    return nGrams;
+  }
+}
+
+const calculateFitness = (genome, cipherText) => {
     let fitness = 0.0;
     const mCipher = new MonoAlphabeticCipher({
         substitution: genome
@@ -32,9 +68,31 @@ const calculateFitness = (genome, cipherText, engFreqs) => {
     }
     //console.log(decryptedFreqs);
     for (let c in decryptedFreqs) {
-        //console.log(`char ${c} dec ${decryptedFreqs[c]} eng ${engFreqs[c]} log ${Math.log2(engFreqs[c])}`);
-        fitness += Math.abs(decryptedFreqs[c] - engFreqs[c]);
-        //fitness += decryptedFreqs[c] * Math.log2(engFreqs[c])
+        //console.log(`char ${c} dec ${decryptedFreqs[c]} eng ${frequencies.unigrams[c]} log ${Math.log2(frequencies.unigrams[c])}`);
+        fitness += Math.abs(decryptedFreqs[c] - frequencies.unigrams[c]);
+        //fitness += decryptedFreqs[c] * Math.log2(frequencies.unigrams[c])
+    }
+
+    let bigrams = bigramFinder(decryptedText);
+
+
+    const bigramFreqs = {};
+
+    for (let i = 0; i < bigrams.length; i++) {
+      if (bigramFreqs[bigrams[i]] === undefined) {
+        bigramFreqs[bigrams[i]] = 1.0;
+      } else {
+        bigramFreqs[bigrams[i]] += 1.0;
+      }
+    }
+    
+    for (let f in bigramFreqs) {
+      bigramFreqs[f] = bigramFreqs[f] / (decryptedText.length - 1);
+    }
+    for (let c in bigramFreqs) {
+      if (frequencies.bigrams[c]) {
+        fitness += Math.abs(bigramFreqs[c] - frequencies.bigrams[c]);
+      }
     }
 
     return fitness;
@@ -50,17 +108,16 @@ const setCharAt = (str, index, chr) => {
 }
 
 class Chromosome {
-    constructor(genome, cipherText, engFreqs) {
+    constructor(genome, cipherText) {
         this.genome = genome;
         this.cipherText = cipherText;
-        this.engFreqs = engFreqs;
-        this.fitness = calculateFitness(genome, cipherText, engFreqs);
+        this.fitness = calculateFitness(genome, cipherText);
     }
 }
 
 class GeneticCracker {
-    constructor(cipherText, engFreqs) {
-        this.generations = 1000;
+    constructor(cipherText) {
+        this.generations = 5000;
         this.populationSize = 500;
         this.elitismPercentage = 15;
         this.tournamentSize = 20;
@@ -71,13 +128,12 @@ class GeneticCracker {
         this.currentGeneration = 0;
         this.population = [];
         this.cipherText = cipherText;
-        this.engFreqs = engFreqs;
     }
 
     createInitialPopulation() {
         for (let i = 0;i < this.populationSize;i++) {
             const genome = MonoAlphabeticCipher.createKeyRandom();
-            const chromosome = new Chromosome(genome, this.cipherText, this.engFreqs);
+            const chromosome = new Chromosome(genome, this.cipherText);
             this.population.push(chromosome);
             this.population.sort((a, b) => a.fitness < b.fitness);
         }
@@ -170,8 +226,8 @@ class GeneticCracker {
                 oldChar);
         }
 
-        children[0] = new Chromosome(firstChild, this.cipherText, this.engFreqs);
-        children[1] = new Chromosome(secondChild, this.cipherText, this.engFreqs);
+        children[0] = new Chromosome(firstChild, this.cipherText);
+        children[1] = new Chromosome(secondChild, this.cipherText);
 
         return children;
     }
