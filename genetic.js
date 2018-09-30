@@ -70,7 +70,7 @@ const calculateFitness = (genome, cipherText) => {
     //console.log(decryptedFreqs);
     for (let c in decryptedFreqs) {
         //console.log(`char ${c} dec ${decryptedFreqs[c]} eng ${frequencies.unigrams[c]} log ${Math.log2(frequencies.unigrams[c])}`);
-        fitness += Math.abs(decryptedFreqs[c] - frequencies.unigrams[c]);
+        fitness += Math.log2(Math.abs(decryptedFreqs[c] - frequencies.unigrams[c]));
         //fitness += decryptedFreqs[c] * Math.log2(frequencies.unigrams[c])
     }
 
@@ -92,7 +92,7 @@ const calculateFitness = (genome, cipherText) => {
     }
     for (let c in bigramFreqs) {
       if (frequencies.bigrams[c]) {
-        fitness += Math.abs(bigramFreqs[c] - frequencies.bigrams[c]);
+        fitness += Math.log2(Math.abs(bigramFreqs[c] - frequencies.bigrams[c]));
       }
     }
 
@@ -113,10 +113,16 @@ const calculateFitness = (genome, cipherText) => {
     }
     for (let c in trigramFreqs) {
       if (frequencies.trigrams[c]) {
-        fitness += Math.abs(trigramFreqs[c] - frequencies.trigrams[c]);
+        fitness += Math.log2(Math.abs(trigramFreqs[c] - frequencies.trigrams[c]));
       }
     }
 
+    // Check if there are common words
+    for (let w in frequencies.commonWords) {
+        if (decryptedText.search(w) !== -1) {
+            fitness += frequencies.commonWords[w];
+        }
+    }
 
     return fitness;
 };
@@ -140,8 +146,8 @@ class Chromosome {
 
 class GeneticCracker {
     constructor(cipherText) {
-        this.generations = 5000;
-        this.populationSize = 500;
+        this.generations = 500;
+        this.populationSize = 250;
         this.elitismPercentage = 15;
         this.tournamentSize = 20;
         this.tournamentWinnerProbability = 0.75;
@@ -171,14 +177,26 @@ class GeneticCracker {
       }
       this.population.sort((a, b) => a.fitness - b.fitness);
 
-      const mCipher = new MonoAlphabeticCipher({
+      const keyTextPairs = [];
+      for (let i = 0; i < this.population.length;i++) {
+        const mCipher = new MonoAlphabeticCipher({
+            substitution: this.population[i].genome
+        });
+          keyTextPairs.push({
+            key: this.population[i].genome,
+            deciphered: mCipher.decipher(this.cipherText.toLowerCase()).toUpperCase()
+          });
+      }
+
+      return keyTextPairs;
+      /*const mCipher = new MonoAlphabeticCipher({
           substitution: this.population[0].genome
       });
       return {
         key: this.population[0].genome,
         deciphered: mCipher.decipher(this.cipherText.toLowerCase()).toUpperCase(),
         took: Date.now() - timer
-      }
+      }*/
     }
 
     createInitialPopulation() {

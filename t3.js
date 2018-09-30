@@ -67,4 +67,4 @@ console.log(`Chromosome fitness is ${chromosome.fitness}`);
 
 const cracker = new genetic.GeneticCracker(cipherText);
 
-console.log(cracker.run(5000, 1000))
+console.log(cracker.run(485, 275))

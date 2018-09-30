@@ -38,7 +38,33 @@ const unigrams = {
   'X': 0.005,
   'Y': 0.020,
   'Z': 0.002,
-}
+};
+
+const commonWords = {
+  'THE': 0.0714,
+  'AND': 0.0304,
+  'THAT': 0.0108,
+  'FOR': 0.0088,
+  'WAS': 0.0074,
+  'WITH': 0.007,
+  'NOT': 0.0061,
+  'THIS': 0.0051,
+  'ARE': 0.005,
+  'HIS': 0.0049,
+  'FROM': 0.0047,
+  'WHICH': 0.0042,
+  'BUT': 0.0038,
+  'HAVE': 0.0037,
+  'THEY': 0.0033,
+  'WHERE': 0.0031,
+  'THEIR': 0.0029,
+  'THERE': 0.0022,
+  'BEEN': 0.0022,
+  'MORE': 0.0021,
+  'WHEN': 0.002,
+  'WILL': 0.002,
+  'WHOULD': 0.002,
+};
 
 // console.log(Object.keys(trigrams).reduce((prev, cur) => prev += trigrams[cur], 0))
 // console.log(Object.keys(bigrams).reduce((prev, cur) => prev += bigrams[cur], 0))
@@ -47,5 +73,6 @@ const unigrams = {
 module.exports = {
   bigrams,
   unigrams,
-  trigrams
+  trigrams,
+  commonWords,
 };
