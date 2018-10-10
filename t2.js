@@ -59,7 +59,7 @@ const keysize = hammings[0].n;
 
 const keysizeBytes = keysize / 8;
 
-console.log('probably the key size is', keysize, 'bytes')
+console.log(`probably the key size is ${keysize} bytes`)
 
 // Now lets crack this clubberfuck
 
