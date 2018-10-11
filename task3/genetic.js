@@ -2,7 +2,7 @@
 
 const MonoAlphabeticCipher = require('text-ciphers').MonoAlphabeticCipher;
 
-const frequencies = require('./frequencies');
+const frequencies = require('../src/frequencies');
 
 // Genetic algorithm implementation for substitution cipher decryption
 
